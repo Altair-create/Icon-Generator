@@ -47,19 +47,21 @@
   .progress-bar-wrap { width: 100%; height: 4px; background: var(--border); border-radius: 2px; margin-bottom: 16px; overflow: hidden; }
   .progress-bar-fill { height: 100%; background: var(--red); border-radius: 2px; transition: width .4s ease; width: 0%; }
 
-  .icon-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-  .icon-cell { background: var(--card); border: 1.5px solid var(--border); border-radius: 16px; padding: 18px 12px 14px; display: flex; flex-direction: column; align-items: center; gap: 8px; min-height: 155px; justify-content: center; transition: border-color .15s; }
-  .icon-cell:hover { border-color: var(--red); }
-  .icon-cell.loading { background: #f5f4f0; animation: pulse 1.2s ease-in-out infinite; }
-  .icon-cell.retrying { background: #fffbeb; border-color: #fcd34d; animation: pulse .8s ease-in-out infinite; }
-  .icon-cell.error { background: #fff5f5; border-color: #fca5a5; animation: none; }
-  .icon-cell.done { justify-content: flex-start; animation: fadeUp .3s ease; }
-  .icon-svg-wrap { width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; }
-  .icon-svg-wrap svg { width: 80px; height: 80px; }
-  .icon-cell-name { font-size: 11px; color: var(--muted); text-align: center; font-weight: 500; line-height: 1.3; }
-  .icon-cell-status { font-size: 11px; color: var(--muted); text-align: center; padding: 4px; line-height: 1.5; }
-  .dl-btn { font-size: 10px; padding: 5px 12px; border-radius: 8px; border: 1px solid var(--border); cursor: pointer; background: #fafaf8; color: var(--text); font-family: inherit; font-weight: 600; transition: all .12s; }
-  .dl-btn:hover { background: var(--red); color: #fff; border-color: var(--red); }
+  .bundle-card { background: var(--card); border: 1.5px solid var(--border); border-radius: 20px; padding: 24px 20px 20px; max-width: 600px; margin: 0 auto; }
+  .bundle-kw { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 18px; }
+  .icon-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 20px; }
+  .icon-cell { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 12px 6px 10px; border-radius: 12px; transition: background .15s; }
+  .icon-cell:hover { background: #f5f4f0; }
+  .icon-cell.loading { background: #f5f4f0; animation: pulse 1.2s ease-in-out infinite; min-height: 110px; justify-content: center; }
+  .icon-cell.retrying { background: #fffbeb; animation: pulse .8s ease-in-out infinite; min-height: 110px; justify-content: center; }
+  .icon-cell.error { background: #fff5f5; min-height: 110px; justify-content: center; }
+  .icon-svg-wrap { width: 72px; height: 72px; display: flex; align-items: center; justify-content: center; }
+  .icon-svg-wrap svg { width: 72px; height: 72px; }
+  .icon-cell-name { font-size: 10px; color: var(--muted); text-align: center; font-weight: 500; line-height: 1.3; }
+  .icon-cell-status { font-size: 10px; color: var(--muted); text-align: center; padding: 4px; line-height: 1.5; }
+  .bundle-dl-btn { width: 100%; background: var(--red); color: #fff; border: none; border-radius: 12px; padding: 14px; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; transition: background .15s; display: none; align-items: center; justify-content: center; gap: 8px; }
+  .bundle-dl-btn:hover { background: var(--red-dark); }
+  .bundle-dl-btn.show { display: flex; }
 
   .footer { text-align: center; margin-top: 48px; font-size: 12px; color: #c5c2bb; }
 
@@ -152,7 +154,11 @@
     <div class="progress-text" id="progressText"></div>
   </div>
   <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progressFill"></div></div>
-  <div class="icon-grid" id="iconGrid"></div>
+  <div class="bundle-card">
+    <div class="bundle-kw" id="bundleKw"></div>
+    <div class="icon-grid" id="iconGrid"></div>
+    <button class="bundle-dl-btn" id="bundleDlBtn" onclick="downloadBundle()">⬇ Download SVG Bundle</button>
+  </div>
 </div>
 
 <div class="footer">Icon Generator — Powered by Google Gemini AI · Gratis Selamanya</div>
@@ -187,12 +193,40 @@ function pickStyle(el) {
   curStyle = el.dataset.style;
 }
 
+let iconStore = [];
+let currentKw = '';
+
 function downloadSVG(content, filename) {
   const blob = new Blob([content], { type: 'image/svg+xml' });
   const url  = URL.createObjectURL(blob);
   const a    = document.createElement('a');
   a.href = url; a.download = filename; a.click();
   URL.revokeObjectURL(url);
+}
+
+function downloadBundle() {
+  const cols = 3, size = 100, gap = 24, labelH = 20, padX = 24, padY = 24;
+  const cellW = size + gap, cellH = size + labelH + gap;
+  const rows = Math.ceil(iconStore.filter(Boolean).length / cols);
+  const totalW = cols * cellW - gap + padX * 2;
+  const totalH = rows * cellH - gap + padY * 2;
+  let svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + totalW + ' ' + totalH + '" width="' + totalW + '" height="' + totalH + '">';
+  svg += '<rect width="100%" height="100%" fill="#ffffff"/>';
+  let idx = 0;
+  iconStore.forEach((icon) => {
+    if (!icon) return;
+    const col = idx % cols, row = Math.floor(idx / cols);
+    const x = padX + col * cellW, y = padY + row * cellH;
+    const inner = icon.svg.replace(/<svg[^>]*>/, '').replace(/<\/svg>/, '');
+    svg += '<g transform="translate(' + x + ',' + y + ')">';
+    svg += '<svg viewBox="0 0 100 100" width="' + size + '" height="' + size + '">' + inner + '</svg>';
+    svg += '<text x="' + (size/2) + '" y="' + (size+14) + '" font-family="Arial,sans-serif" font-size="9" fill="#888" text-anchor="middle">' + icon.name + '</text>';
+    svg += '</g>';
+    idx++;
+  });
+  svg += '</svg>';
+  const safe = currentKw.replace(/\s+/g, '-').toLowerCase();
+  downloadSVG(svg, safe + '-icon-bundle.svg');
 }
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
@@ -217,7 +251,7 @@ function buildNames(kw, n) {
 }
 
 async function callAPI(iconName, keyword, style, retry = 0) {
-  if (retry > 0) await sleep(retry * 3500);
+  if (retry > 0) await sleep(retry * 8000);
 
   const resp = await fetch('/api/generate', {
     method  : 'POST',
@@ -246,15 +280,10 @@ function setCell(i, state, d = {}) {
     cell.className = 'icon-cell retrying';
     cell.innerHTML = `<div class="icon-cell-status" style="color:#92400e">⏳ ${d.msg}</div>`;
   } else if (state === 'done') {
-    cell.className = 'icon-cell done';
+    cell.className = 'icon-cell';
     cell.innerHTML =
       `<div class="icon-svg-wrap">${d.svg}</div>` +
-      `<div class="icon-cell-name">${d.name}</div>` +
-      `<button class="dl-btn" data-i="${i}">↓ SVG</button>`;
-    cell.querySelector(`[data-i="${i}"]`).onclick = () => {
-      const safe = d.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-      downloadSVG(d.svg, `${d.kw}-${safe}.svg`);
-    };
+      `<div class="icon-cell-name">${d.name}</div>`;
   } else if (state === 'error') {
     cell.className = 'icon-cell error';
     cell.innerHTML = `<div class="icon-cell-status" style="color:#ef4444">${d.name}<br><small>Gagal :(</small></div>`;
@@ -268,6 +297,8 @@ async function generate() {
   if (!curStyle) { alert('Pilih style icon terlebih dahulu.'); return; }
 
   running = true;
+  iconStore = new Array(9).fill(null);
+  currentKw = kw;
   const btn = document.getElementById('genBtn');
   btn.disabled = true;
   btn.innerHTML = '<span class="spin"></span>Generating...';
@@ -280,6 +311,8 @@ async function generate() {
   const grid = document.getElementById('iconGrid');
   wrap.style.display = 'block';
   grid.innerHTML = '';
+  document.getElementById('bundleKw').textContent = kw.toUpperCase() + ' ICONS';
+  document.getElementById('bundleDlBtn').classList.remove('show');
 
   for (let i = 0; i < TOTAL; i++) {
     const cell = document.createElement('div');
@@ -298,25 +331,27 @@ async function generate() {
     while (retries <= 3) {
       try {
         const svg = await callAPI(names[i], kw, curStyle, retries);
+        iconStore[i] = { svg, name: names[i] };
         setCell(i, 'done', { svg, name: names[i], kw: kwSlug });
         break;
       } catch (err) {
         if (err.retryable && retries < 3) {
           retries++;
-          const secs = Math.round((err.wait || 5000) / 1000);
+          const secs = Math.round((err.wait || 10000) / 1000);
           setCell(i, 'retrying', { msg: `Tunggu ${secs}s lalu retry...` });
-          await sleep(err.wait || 5000);
+          await sleep(err.wait || 10000);
         } else {
           setCell(i, 'error', { name: names[i] });
           break;
         }
       }
     }
-    if (i < TOTAL - 1) await sleep(1200);
+    if (i < TOTAL - 1) await sleep(5000);
   }
 
   document.getElementById('progressFill').style.width = '100%';
   document.getElementById('progressText').textContent = 'Selesai! ✓';
+  if (iconStore.some(Boolean)) document.getElementById('bundleDlBtn').classList.add('show');
   running = false;
   btn.disabled = false;
   btn.innerHTML = 'Generate Icon';
