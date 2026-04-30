@@ -250,44 +250,24 @@ function buildNames(kw, n) {
   return sfx.slice(0, n).map((s, i) => i === 0 ? kw : `${kw} ${s}`);
 }
 
-async function callAPI(iconName, keyword, style, retry = 0) {
+async function callAPI(keyword, style, retry = 0) {
   if (retry > 0) await sleep(retry * 8000);
 
   const resp = await fetch('/api/generate', {
     method  : 'POST',
     headers : { 'Content-Type': 'application/json' },
-    body    : JSON.stringify({ iconName, keyword, style })
+    body    : JSON.stringify({ keyword, style })
   });
 
   if (resp.status === 429) {
-    if (retry < 3) throw { retryable: true, wait: Math.pow(2, retry + 1) * 5000 };
+    if (retry < 3) throw { retryable: true, wait: Math.pow(2, retry + 1) * 10000 };
     throw { retryable: false, msg: 'Rate limit' };
   }
 
   const data = await resp.json();
   if (!resp.ok) throw { retryable: false, msg: data.error || 'Server error' };
-  if (!data.svg) throw { retryable: false, msg: 'SVG tidak ditemukan' };
-  return data.svg;
-}
-
-function setCell(i, state, d = {}) {
-  const cell = document.getElementById(`cell${i}`);
-  if (!cell) return;
-  if (state === 'loading') {
-    cell.className = 'icon-cell loading';
-    cell.innerHTML = `<div class="icon-cell-status">Membuat...</div>`;
-  } else if (state === 'retrying') {
-    cell.className = 'icon-cell retrying';
-    cell.innerHTML = `<div class="icon-cell-status" style="color:#92400e">⏳ ${d.msg}</div>`;
-  } else if (state === 'done') {
-    cell.className = 'icon-cell';
-    cell.innerHTML =
-      `<div class="icon-svg-wrap">${d.svg}</div>` +
-      `<div class="icon-cell-name">${d.name}</div>`;
-  } else if (state === 'error') {
-    cell.className = 'icon-cell error';
-    cell.innerHTML = `<div class="icon-cell-status" style="color:#ef4444">${d.name}<br><small>Gagal :(</small></div>`;
-  }
+  if (!data.icons) throw { retryable: false, msg: 'Icons tidak ditemukan' };
+  return data.icons;
 }
 
 async function generate() {
@@ -297,15 +277,11 @@ async function generate() {
   if (!curStyle) { alert('Pilih style icon terlebih dahulu.'); return; }
 
   running = true;
-  iconStore = new Array(9).fill(null);
+  iconStore = [];
   currentKw = kw;
   const btn = document.getElementById('genBtn');
   btn.disabled = true;
   btn.innerHTML = '<span class="spin"></span>Generating...';
-
-  const TOTAL = 9;
-  const names = buildNames(kw, TOTAL);
-  const kwSlug = kw.replace(/\s+/g, '-').toLowerCase();
 
   const wrap = document.getElementById('resultWrap');
   const grid = document.getElementById('iconGrid');
@@ -313,45 +289,61 @@ async function generate() {
   grid.innerHTML = '';
   document.getElementById('bundleKw').textContent = kw.toUpperCase() + ' ICONS';
   document.getElementById('bundleDlBtn').classList.remove('show');
+  document.getElementById('progressText').textContent = 'Membuat 9 icon...';
+  document.getElementById('progressFill').style.width = '10%';
 
-  for (let i = 0; i < TOTAL; i++) {
+  // Tampilkan 9 loading cell
+  for (let i = 0; i < 9; i++) {
     const cell = document.createElement('div');
     cell.className = 'icon-cell loading';
-    cell.id = `cell${i}`;
-    cell.innerHTML = `<div class="icon-cell-status" style="color:#c5c2bb">${names[i]}</div>`;
+    cell.id = 'cell' + i;
+    cell.innerHTML = '<div class="icon-cell-status">...</div>';
     grid.appendChild(cell);
   }
 
-  for (let i = 0; i < TOTAL; i++) {
-    document.getElementById('progressText').textContent = `${i + 1} / ${TOTAL}`;
-    document.getElementById('progressFill').style.width = `${Math.round(i / TOTAL * 100)}%`;
-    setCell(i, 'loading');
+  let retries = 0;
+  while (retries <= 3) {
+    try {
+      document.getElementById('progressText').textContent = retries > 0 ? 'Retry ' + retries + '/3...' : 'Membuat 9 icon sekaligus...';
+      const icons = await callAPI(kw, curStyle, retries);
+      document.getElementById('progressFill').style.width = '100%';
+      document.getElementById('progressText').textContent = 'Selesai! ✓';
 
-    let retries = 0;
-    while (retries <= 3) {
-      try {
-        const svg = await callAPI(names[i], kw, curStyle, retries);
-        iconStore[i] = { svg, name: names[i] };
-        setCell(i, 'done', { svg, name: names[i], kw: kwSlug });
-        break;
-      } catch (err) {
-        if (err.retryable && retries < 3) {
-          retries++;
-          const secs = Math.round((err.wait || 10000) / 1000);
-          setCell(i, 'retrying', { msg: `Tunggu ${secs}s lalu retry...` });
-          await sleep(err.wait || 10000);
-        } else {
-          setCell(i, 'error', { name: names[i] });
-          break;
+      icons.forEach((icon, i) => {
+        iconStore[i] = { svg: icon.svg, name: icon.name };
+        const cell = document.getElementById('cell' + i);
+        if (cell) {
+          cell.className = 'icon-cell';
+          cell.innerHTML =
+            '<div class="icon-svg-wrap">' + icon.svg + '</div>' +
+            '<div class="icon-cell-name">' + icon.name + '</div>';
         }
+      });
+
+      if (iconStore.some(Boolean)) document.getElementById('bundleDlBtn').classList.add('show');
+      break;
+
+    } catch (err) {
+      if (err.retryable && retries < 3) {
+        retries++;
+        const secs = Math.round((err.wait || 10000) / 1000);
+        document.getElementById('progressText').textContent = 'Rate limit, tunggu ' + secs + 's...';
+        for (let i = 0; i < 9; i++) {
+          const cell = document.getElementById('cell' + i);
+          if (cell) { cell.className = 'icon-cell retrying'; cell.innerHTML = '<div class="icon-cell-status">⏳ Retry ' + retries + '...</div>'; }
+        }
+        await sleep(err.wait || 10000);
+      } else {
+        document.getElementById('progressText').textContent = 'Gagal. Coba lagi.';
+        for (let i = 0; i < 9; i++) {
+          const cell = document.getElementById('cell' + i);
+          if (cell) { cell.className = 'icon-cell error'; cell.innerHTML = '<div class="icon-cell-status" style="color:#ef4444">Gagal :(</div>'; }
+        }
+        break;
       }
     }
-    if (i < TOTAL - 1) await sleep(5000);
   }
 
-  document.getElementById('progressFill').style.width = '100%';
-  document.getElementById('progressText').textContent = 'Selesai! ✓';
-  if (iconStore.some(Boolean)) document.getElementById('bundleDlBtn').classList.add('show');
   running = false;
   btn.disabled = false;
   btn.innerHTML = 'Generate Icon';
