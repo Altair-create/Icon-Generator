@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Icon Generator — Free SVG Icon Maker</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --red: #f3502e;
+    --red-dark: #d43d1c;
+    --bg: #f5f4f0;
+    --card: #ffffff;
+    --text: #1a1a1a;
+    --muted: #7a7a7a;
+    --border: #e8e6e1;
+    --radius: 18px;
+    --shadow: 0 2px 20px rgba(0,0,0,0.07);
+  }
+
+  body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 40px 16px 80px;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    text-align: center;
+    margin-bottom: 32px;
+  }
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 5px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--red);
+    margin-bottom: 14px;
+    letter-spacing: 0.5px;
+  }
+  .hero h1 {
+    font-size: clamp(28px, 5vw, 44px);
+    font-weight: 800;
+    color: var(--text);
+    line-height: 1.15;
+    margin-bottom: 10px;
+    letter-spacing: -1px;
+  }
+  .hero h1 span { color: var(--red); }
+  .hero p {
+    font-size: 15px;
+    color: var(--muted);
+    max-width: 420px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+
+  /* ── CARD ── */
+  .card {
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    padding: 28px 24px 24px;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  /* ── API KEY SECTION ── */
+  .api-section {
+    background: #fffaf8;
+    border: 1.5px dashed #f5c4b8;
+    border-radius: 12px;
+    padding: 16px 18px;
+    margin-bottom: 22px;
+  }
+  .api-section-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--red);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+  }
+  .api-row { display: flex; gap: 8px; }
+  .api-input {
+    flex: 1;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 13px;
+    font-family: inherit;
+    font-size: 13px;
+    color: var(--text);
+    background: #fff;
+    outline: none;
+  }
+  .api-input:focus { border-color: var(--red); }
+  .api-save-btn {
+    background: var(--red);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 16px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background .15s;
+  }
+  .api-save-btn:hover { background: var(--red-dark); }
+  .api-note {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 8px;
+    line-height: 1.5;
+  }
+  .api-note a { color: var(--red); text-decoration: none; font-weight: 600; }
+  .api-note a:hover { text-decoration: underline; }
+  .api-saved {
+    font-size: 12px;
+    color: #16a34a;
+    font-weight: 600;
+    margin-top: 8px;
+    display: none;
+  }
+
+  /* ── INPUT ── */
+  .section-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+  .keyword-input {
+    width: 100%;
+    min-height: 72px;
+    resize: vertical;
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    padding: 13px 15px;
+    font-family: inherit;
+    font-size: 14px;
+    color: var(--text);
+    background: #fafaf8;
+    outline: none;
+    margin-bottom: 20px;
+    transition: border-color .2s;
+  }
+  .keyword-input:focus { border-color: var(--red); background: #fff; }
+  .keyword-input::placeholder { color: #c5c2bb; }
+
+  /* ── STYLE PICKER ── */
+  .style-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 22px;
+  }
+  .style-opt {
+    border: 1.5px solid var(--border);
+    border-radius: 14px;
+    padding: 12px 8px 10px;
+    cursor: pointer;
+    text-align: center;
+    transition: all .15s;
+    background: #fafaf8;
+    user-select: none;
+  }
+  .style-opt:hover { border-color: var(--red); background: #fff; }
+  .style-opt.active {
+    border-color: var(--red);
+    background: #fff8f6;
+    box-shadow: 0 0 0 3px rgba(243,80,46,0.1);
+  }
+  .style-thumb {
+    width: 52px; height: 52px;
+    border-radius: 10px;
+    margin: 0 auto 8px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .style-name {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: 0.3px;
+  }
+
+  /* ── BUTTON ── */
+  .gen-btn {
+    width: 100%;
+    background: var(--red);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    padding: 15px;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background .15s, transform .1s;
+    letter-spacing: 0.2px;
+  }
+  .gen-btn:hover { background: var(--red-dark); }
+  .gen-btn:active { transform: scale(0.99); }
+  .gen-btn:disabled { background: #d5d2cc; cursor: not-allowed; transform: none; }
+
+  /* ── RESULT ── */
+  .result-wrap { max-width: 600px; margin: 28px auto 0; }
+  .result-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .result-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .progress-text {
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 500;
+  }
+  .progress-bar-wrap {
+    width: 100%;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    margin-bottom: 16px;
+    overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: var(--red);
+    border-radius: 2px;
+    transition: width .4s ease;
+    width: 0%;
+  }
+
+  /* ── ICON GRID ── */
+  .icon-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+  .icon-cell {
+    background: var(--card);
+    border: 1.5px solid var(--border);
+    border-radius: 16px;
+    padding: 18px 12px 14px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    min-height: 155px;
+    justify-content: center;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .icon-cell:hover { border-color: var(--red); box-shadow: 0 2px 16px rgba(243,80,46,.1); }
+  .icon-cell.loading { background: #f5f4f0; animation: pulse 1.2s ease-in-out infinite; }
+  .icon-cell.waiting { background: #f5f4f0; }
+  .icon-cell.retrying { background: #fffbeb; border-color: #fcd34d; animation: pulse .8s ease-in-out infinite; }
+  .icon-cell.error { background: #fff5f5; border-color: #fca5a5; animation: none; }
+  .icon-cell.done { justify-content: flex-start; animation: fadeUp .3s ease; }
+
+  .icon-svg-wrap { width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; }
+  .icon-svg-wrap svg { width: 80px; height: 80px; }
+  .icon-cell-name { font-size: 11px; color: var(--muted); text-align: center; font-weight: 500; line-height: 1.3; }
+  .icon-cell-status { font-size: 11px; color: var(--muted); text-align: center; padding: 4px; line-height: 1.5; }
+
+  .dl-btn {
+    font-size: 10px;
+    padding: 5px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    background: #fafaf8;
+    color: var(--text);
+    font-family: inherit;
+    font-weight: 600;
+    transition: all .12s;
+    letter-spacing: 0.3px;
+  }
+  .dl-btn:hover { background: var(--red); color: #fff; border-color: var(--red); }
+
+  /* ── FOOTER ── */
+  .footer {
+    text-align: center;
+    margin-top: 48px;
+    font-size: 12px;
+    color: #c5c2bb;
+  }
+
+  /* ── ANIMATIONS ── */
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.45} }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:none} }
+  .spin { display:inline-block;width:15px;height:15px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spinA .7s linear infinite;vertical-align:middle;margin-right:7px; }
+  @keyframes spinA { to{transform:rotate(360deg)} }
+
+  @media(max-width:480px) {
+    .style-grid { grid-template-columns: repeat(4,1fr); gap:7px; }
+    .style-thumb { width:44px; height:44px; }
+    .icon-grid { grid-template-columns: repeat(3,1fr); gap:9px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-badge">✦ Free SVG Icon Generator</div>
+  <h1>Buat <span>Icon SVG</span><br>Gratis & Instan</h1>
+  <p>Generate 9 icon vektor berkualitas tinggi hanya dengan satu keyword. Download langsung, gratis selamanya.</p>
+</div>
+
+<div class="card">
+
+  <!-- API KEY -->
+  <div class="api-section">
+    <div class="api-section-title">🔑 Gemini API Key</div>
+    <div class="api-row">
+      <input class="api-input" id="apiKeyInput" type="password" placeholder="Paste API Key kamu: AIzaSy...">
+      <button class="api-save-btn" onclick="saveApiKey()">Simpan</button>
+    </div>
+    <div class="api-saved" id="apiSaved">✓ API Key tersimpan, siap digunakan!</div>
+    <div class="api-note">
+      Belum punya? Gratis di → <a href="https://aistudio.google.com/apikey" target="_blank">aistudio.google.com/apikey</a><br>
+      API Key disimpan di browser kamu saja, tidak dikirim ke mana pun.
+    </div>
+  </div>
+
+  <!-- KEYWORD -->
+  <div class="section-label">Ketik keyword icon:</div>
+  <textarea class="keyword-input" id="kwInput" placeholder="Contoh: delivery box, music player, camera, email..."></textarea>
+
+  <!-- STYLE -->
+  <div class="section-label">Pilih style icon:</div>
+  <div class="style-grid">
+    <div class="style-opt" data-style="color" onclick="pickStyle(this)">
+      <div class="style-thumb" style="background:#fff0ec">
+        <svg viewBox="0 0 52 52" width="44" height="44">
+          <polygon points="26,8 46,20 46,44 26,44 6,44 6,20" fill="#F5C478" stroke="#2d2d2d" stroke-width="2.5" stroke-linejoin="round"/>
+          <polygon points="6,20 26,8 46,20 26,32" fill="#D4973A" stroke="#2d2d2d" stroke-width="2.5" stroke-linejoin="round"/>
+          <rect x="20" y="32" width="12" height="8" rx="1.5" fill="#B8782A" stroke="#2d2d2d" stroke-width="2"/>
+        </svg>
+      </div>
+      <div class="style-name">Color</div>
+    </div>
+    <div class="style-opt" data-style="flat" onclick="pickStyle(this)">
+      <div class="style-thumb" style="background:#f0f5ff">
+        <svg viewBox="0 0 52 52" width="44" height="44">
+          <polygon points="26,8 46,20 46,44 6,44 6,20" fill="#F5C478"/>
+          <polygon points="6,20 26,8 46,20 26,32" fill="#D4973A"/>
+          <rect x="20" y="32" width="12" height="8" rx="1.5" fill="#B8782A"/>
+        </svg>
+      </div>
+      <div class="style-name">Flat</div>
+    </div>
+    <div class="style-opt" data-style="outline" onclick="pickStyle(this)">
+      <div class="style-thumb" style="background:#f5f5f5">
+        <svg viewBox="0 0 52 52" width="44" height="44">
+          <polygon points="26,8 46,20 46,44 6,44 6,20" fill="none" stroke="#1a1a1a" stroke-width="2.5" stroke-linejoin="round"/>
+          <polyline points="6,20 26,8 46,20" fill="none" stroke="#1a1a1a" stroke-width="2.5" stroke-linejoin="round"/>
+          <line x1="26" y1="8" x2="26" y2="32" stroke="#1a1a1a" stroke-width="2"/>
+          <rect x="20" y="32" width="12" height="8" rx="1.5" fill="none" stroke="#1a1a1a" stroke-width="2"/>
+        </svg>
+      </div>
+      <div class="style-name">Outline</div>
+    </div>
+    <div class="style-opt" data-style="ui" onclick="pickStyle(this)">
+      <div class="style-thumb" style="background:#edfaf3">
+        <svg viewBox="0 0 52 52" width="44" height="44">
+          <rect x="8" y="14" width="36" height="28" rx="4" fill="#22c55e"/>
+          <rect x="8" y="14" width="36" height="12" rx="4" fill="#16a34a"/>
+          <rect x="15" y="32" width="12" height="3" rx="1.5" fill="#fff" opacity=".8"/>
+          <rect x="15" y="37" width="8" height="3" rx="1.5" fill="#fff" opacity=".5"/>
+          <circle cx="36" cy="20" r="3.5" fill="#fff" opacity=".9"/>
+        </svg>
+      </div>
+      <div class="style-name">UI</div>
+    </div>
+  </div>
+
+  <button class="gen-btn" id="genBtn" onclick="generate()">Generate Icon</button>
+</div>
+
+<!-- RESULT -->
+<div class="result-wrap" id="resultWrap" style="display:none">
+  <div class="result-header">
+    <div class="result-title">Hasil Icon</div>
+    <div class="progress-text" id="progressText"></div>
+  </div>
+  <div class="progress-bar-wrap">
+    <div class="progress-bar-fill" id="progressFill"></div>
+  </div>
+  <div class="icon-grid" id="iconGrid"></div>
+</div>
+
+<div class="footer">Icon Generator — Powered by Google Gemini AI · Gratis Selamanya</div>
+
+<script>
+// ── State ──────────────────────────────────────────────────────────────────
+let curStyle = '';
+let apiKey   = '';
+let running  = false;
+
+// ── Load saved API key ─────────────────────────────────────────────────────
+window.addEventListener('load', () => {
+  const saved = localStorage.getItem('ig_gemini_key');
+  if (saved) {
+    apiKey = saved;
+    document.getElementById('apiKeyInput').value = saved;
+    document.getElementById('apiSaved').style.display = 'block';
+  }
+});
+
+// ── Simpan API Key ─────────────────────────────────────────────────────────
+function saveApiKey() {
+  const k = document.getElementById('apiKeyInput').value.trim();
+  if (!k) { alert('Masukkan API key terlebih dahulu.'); return; }
+  if (!k.startsWith('AIza')) {
+    alert('API key Gemini biasanya diawali "AIza..." — cek kembali ya.'); return;
+  }
+  apiKey = k;
+  localStorage.setItem('ig_gemini_key', k);
+  document.getElementById('apiSaved').style.display = 'block';
+}
+
+// ── Pilih style ────────────────────────────────────────────────────────────
+function pickStyle(el) {
+  document.querySelectorAll('.style-opt').forEach(o => o.classList.remove('active'));
+  el.classList.add('active');
+  curStyle = el.dataset.style;
+}
+
+// ── Download SVG ───────────────────────────────────────────────────────────
+function downloadSVG(content, filename) {
+  const blob = new Blob([content], { type: 'image/svg+xml' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url; a.download = filename; a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ── Helper sleep ───────────────────────────────────────────────────────────
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+// ── Style prompts ──────────────────────────────────────────────────────────
+const STYLE_PROMPT = {
+  color: `COLOR STYLE (like Flaticon color pack):
+- Bold black outlines on ALL shapes: stroke="#2d2d2d" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"
+- Fill: warm multi-shade colors. Light face #F5C478, mid face #D4973A, dark/shadow #B8782A
+- 3D depth: lighter fill on front, darker on top/side
+- Accent badge (if any): fill="#7EC8F0" circle, white stroke checkmark inside
+- Max 12 simple shapes`,
+
+  flat: `FLAT STYLE (like Flaticon flat pack):
+- NO outlines (no stroke on main shapes)
+- Solid flat fills only, 3 tones: light #F5C478, mid #D4973A, shadow #B8782A
+- Darker polygon for shadow/side to show depth
+- Accent badge (if any): soft blue #7EC8F0, no outline
+- Max 12 shapes, clean and smooth`,
+
+  outline: `OUTLINE STYLE (like Flaticon line icons):
+- ONLY strokes, fill="none" on EVERY single shape
+- stroke="#1a1a1a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"
+- Fine details: stroke-width="2"
+- Accent badge (if any): stroke-only circle + stroke checkmark, fill="none"
+- Max 10 clean paths`,
+
+  ui: `UI ICON (like Heroicons / Tabler Icons):
+- Minimal, functional, clean
+- Filled silhouette in #374151 OR stroke-only stroke="#374151" stroke-width="2.5" stroke-linecap="round"
+- Max 6 shapes, simple geometry only
+- No decorative detail`
+};
+
+// ── Icon names per keyword ─────────────────────────────────────────────────
+const PRESET_NAMES = {
+  camera   : ['Camera Body','DSLR Camera','Camera Lens','Camera Flash','Tripod','Film Roll','Camera Bag','Viewfinder','Memory Card'],
+  email    : ['Inbox Email','Send Mail','Email Draft','Attachment','Email Alert','Unread Mail','Email Search','Delete Mail','Reply All'],
+  music    : ['Music Note','Headphones','Microphone','Speaker','Guitar','Piano Keys','Vinyl Record','Music Player','Equalizer'],
+  weather  : ['Sunny Day','Rain Cloud','Thunderstorm','Snowflake','Wind','Foggy','Rainbow','Umbrella','Thermometer'],
+  delivery : ['Package Box','Open Box','Delivery Truck','Fast Shipping','Warehouse','Return Box','Fragile Box','Gift Box','Stack Boxes'],
+  shopping : ['Shopping Cart','Price Tag','Discount Badge','Gift Box','Shopping Bag','Credit Card','Wishlist','Store Front','Receipt'],
+  food     : ['Burger','Pizza Slice','Salad Bowl','Coffee Cup','Sushi Roll','Birthday Cake','French Fries','Noodle Bowl','Ice Cream'],
+  phone    : ['Smartphone','Phone Call','Video Call','Phone Ring','Missed Call','Phone Lock','Battery','Signal Bar','SIM Card'],
+};
+
+function buildNames(kw, n) {
+  const k = kw.toLowerCase();
+  for (const key in PRESET_NAMES) {
+    if (k.includes(key)) return PRESET_NAMES[key].slice(0, n);
+  }
+  const sfx = ['','Variant 1','Variant 2','Type A','Type B','Type C','Style 1','Style 2','Style 3'];
+  return sfx.slice(0, n).map((s, i) => i === 0 ? kw : `${kw} ${s}`);
+}
+
+// ── Panggil Gemini API ─────────────────────────────────────────────────────
+async function callGemini(iconName, keyword, style, retry = 0) {
+  if (retry > 0) await sleep(retry * 3500);
+
+  const prompt =
+    `Create a single professional SVG icon.\n` +
+    `Subject: "${iconName}" (context: ${keyword})\n\n` +
+    STYLE_PROMPT[style] + '\n\n' +
+    `STRICT LAYOUT RULES:\n` +
+    `- viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"\n` +
+    `- Icon centered, use coords 10–90 only (10px margin all sides)\n` +
+    `- NO text elements, NO external references, NO <image> tags\n` +
+    `- All coordinates must stay within 0–100\n` +
+    `- Shapes should NOT randomly overlap\n` +
+    `- Icon must clearly look like "${iconName}"\n\n` +
+    `Return ONLY the raw SVG. Start with <svg and end with </svg>. No explanation, no markdown.`;
+
+  const url  = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+  const resp = await fetch(url, {
+    method  : 'POST',
+    headers : { 'Content-Type': 'application/json' },
+    body    : JSON.stringify({
+      contents         : [{ parts: [{ text: prompt }] }],
+      generationConfig : { temperature: 0.7, maxOutputTokens: 2048 }
+    })
+  });
+
+  if (resp.status === 429) {
+    if (retry < 3) throw { retryable: true, wait: Math.pow(2, retry + 1) * 5000 };
+    throw { retryable: false, msg: 'Rate limit' };
+  }
+  if (!resp.ok) {
+    const e = await resp.json().catch(() => ({}));
+    throw { retryable: false, msg: e.error?.message || `HTTP ${resp.status}` };
+  }
+
+  const data = await resp.json();
+  const raw  = (data.candidates?.[0]?.content?.parts?.[0]?.text || '').trim();
+  const s    = raw.indexOf('<svg');
+  const e    = raw.lastIndexOf('</svg>') + 6;
+  if (s === -1) throw { retryable: false, msg: 'SVG tidak ditemukan' };
+  return raw.slice(s, e);
+}
+
+// ── Set tampilan cell ──────────────────────────────────────────────────────
+function setCell(i, state, d = {}) {
+  const cell = document.getElementById(`cell${i}`);
+  if (!cell) return;
+
+  if (state === 'waiting') {
+    cell.className = 'icon-cell waiting';
+    cell.innerHTML = `<div class="icon-cell-status" style="color:#c5c2bb">${d.name}</div>`;
+  } else if (state === 'loading') {
+    cell.className = 'icon-cell loading';
+    cell.innerHTML = `<div class="icon-cell-status">Membuat...</div>`;
+  } else if (state === 'retrying') {
+    cell.className = 'icon-cell retrying';
+    cell.innerHTML = `<div class="icon-cell-status" style="color:#92400e">⏳ ${d.msg}</div>`;
+  } else if (state === 'done') {
+    cell.className = 'icon-cell done';
+    cell.innerHTML =
+      `<div class="icon-svg-wrap">${d.svg}</div>` +
+      `<div class="icon-cell-name">${d.name}</div>` +
+      `<button class="dl-btn" data-i="${i}">↓ SVG</button>`;
+    cell.querySelector(`[data-i="${i}"]`).onclick = () => {
+      const safe = d.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+      downloadSVG(d.svg, `${d.kw}-${safe}.svg`);
+    };
+  } else if (state === 'error') {
+    cell.className = 'icon-cell error';
+    cell.innerHTML = `<div class="icon-cell-status" style="color:#ef4444">${d.name}<br><small>Gagal :(</small></div>`;
+  }
+}
+
+// ── Main generate ──────────────────────────────────────────────────────────
+async function generate() {
+  if (running) return;
+
+  const kw = document.getElementById('kwInput').value.trim();
+  if (!kw)      { alert('Masukkan keyword icon terlebih dahulu.'); return; }
+  if (!curStyle){ alert('Pilih style icon terlebih dahulu.'); return; }
+  if (!apiKey)  { alert('Simpan Gemini API Key terlebih dahulu.'); return; }
+
+  running = true;
+  const btn = document.getElementById('genBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spin"></span>Generating...';
+
+  const TOTAL = 9;
+  const names = buildNames(kw, TOTAL);
+  const kwSlug = kw.replace(/\s+/g, '-').toLowerCase();
+
+  // Tampilkan grid kosong
+  const wrap = document.getElementById('resultWrap');
+  const grid = document.getElementById('iconGrid');
+  wrap.style.display = 'block';
+  grid.innerHTML = '';
+
+  for (let i = 0; i < TOTAL; i++) {
+    const cell = document.createElement('div');
+    cell.className = 'icon-cell waiting';
+    cell.id = `cell${i}`;
+    cell.innerHTML = `<div class="icon-cell-status" style="color:#c5c2bb">${names[i]}</div>`;
+    grid.appendChild(cell);
+  }
+
+  // Generate satu per satu
+  for (let i = 0; i < TOTAL; i++) {
+    document.getElementById('progressText').textContent = `${i + 1} / ${TOTAL}`;
+    document.getElementById('progressFill').style.width = `${Math.round(i / TOTAL * 100)}%`;
+    setCell(i, 'loading');
+
+    let retries = 0;
+    while (retries <= 3) {
+      try {
+        const svg = await callGemini(names[i], kw, curStyle, retries);
+        setCell(i, 'done', { svg, name: names[i], kw: kwSlug });
+        break;
+      } catch (err) {
+        if (err.retryable && retries < 3) {
+          retries++;
+          const secs = Math.round((err.wait || 5000) / 1000);
+          setCell(i, 'retrying', { msg: `Tunggu ${secs}s lalu retry...` });
+          await sleep(err.wait || 5000);
+        } else {
+          setCell(i, 'error', { name: names[i] });
+          break;
+        }
+      }
+    }
+
+    if (i < TOTAL - 1) await sleep(1200); // jeda antar request
+  }
+
+  document.getElementById('progressFill').style.width = '100%';
+  document.getElementById('progressText').textContent = 'Selesai! ✓';
+
+  running = false;
+  btn.disabled = false;
+  btn.innerHTML = 'Generate Icon';
+}
+</script>
+
+</body>
+</html>
