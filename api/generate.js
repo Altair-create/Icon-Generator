@@ -52,6 +52,6 @@ module.exports = async function handler(req, res) {
     return res.status(200).json({ icons: parsed.icons });
 
   } catch (e) {
-    return res.status(500).json({ error: e.message || 'Terjadi kesalahan' });
+    return res.status(500).json({ error: e.message || 'Terjadi kesalahan', stack: e.stack, type: e.constructor.name });
   }
 };
