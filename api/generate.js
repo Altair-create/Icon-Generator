@@ -65,5 +65,6 @@ Return ONLY this exact JSON (no markdown, no explanation):
 
   } catch (e) {
     return res.status(500).json({ error: e.message || 'Terjadi kesalahan' });
+    
   }
 };
