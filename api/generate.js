@@ -43,7 +43,7 @@ Return ONLY this exact JSON (no markdown, no explanation):
         model: 'llama-3.1-8b-instant',
         messages: [{ role: 'user', content: prompt }],
         temperature: 0.7,
-        max_tokens: 8192
+        max_tokens: 6000,
       })
     });
 
