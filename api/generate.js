@@ -30,17 +30,20 @@ Return ONLY this exact JSON (no markdown, no explanation):
 {"icons":[{"name":"icon name","svg":"<svg viewBox=\\"0 0 100 100\\" xmlns=\\"http://www.w3.org/2000/svg\\">...</svg>"},{"name":"...","svg":"..."},{"name":"...","svg":"..."},{"name":"...","svg":"..."},{"name":"...","svg":"..."},{"name":"...","svg":"..."},{"name":"...","svg":"..."},{"name":"...","svg":"..."},{"name":"...","svg":"..."}]}`;
 
   try {
-    const apiKey = process.env.GEMINI_API_KEY;
+    const apiKey = process.env.GROQ_API_KEY;
     if (!apiKey) return res.status(500).json({ error: 'API key belum dikonfigurasi' });
 
-    const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' + apiKey;
-
-    const response = await fetch(url, {
+    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + apiKey
+      },
       body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { temperature: 0.7, maxOutputTokens: 8192 }
+        model: 'llama-3.3-70b-versatile',
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.7,
+        max_tokens: 8192
       })
     });
 
@@ -51,7 +54,7 @@ Return ONLY this exact JSON (no markdown, no explanation):
     }
 
     const data = await response.json();
-    const raw = ((data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0] && data.candidates[0].content.parts[0].text) || '').trim();
+    const raw = ((data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) || '').trim();
 
     const jsonStart = raw.indexOf('{');
     const jsonEnd = raw.lastIndexOf('}') + 1;
