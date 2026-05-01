@@ -8,26 +8,14 @@ module.exports = async function handler(req, res) {
   const { keyword, style } = req.body;
   if (!keyword || !style) return res.status(400).json({ error: 'Data tidak lengkap' });
 
-  const STYLE_PROMPT = {
-    color: 'COLOR STYLE: Bold black outlines stroke="#2d2d2d" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" on ALL shapes. Fill with warm multi-shade colors: light #F5C478, mid #D4973A, dark #B8782A. Different shade per face for 3D depth. Max 12 shapes per icon.',
-    flat: 'FLAT STYLE: NO strokes on main shapes. Solid flat fills, 3 tones: light #F5C478, mid #D4973A, shadow #B8782A. Darker polygon for shadow face. Max 12 shapes per icon.',
-    outline: 'OUTLINE STYLE: ONLY strokes, fill="none" on EVERY shape. stroke="#1a1a1a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round". Max 10 paths per icon.',
-    ui: 'UI ICON: Minimal functional. Filled #374151 OR stroke="#374151" stroke-width="2.5". Max 6 shapes per icon.'
+  const styles = {
+    color: 'colorful with black outlines stroke="#2d2d2d" stroke-width="3", warm fills #F5C478/#D4973A/#B8782A',
+    flat: 'flat no outlines, solid fills #F5C478/#D4973A/#B8782A',
+    outline: 'outline only, fill="none", stroke="#1a1a1a" stroke-width="3"',
+    ui: 'minimal UI, filled #374151, simple shapes'
   };
 
-  const prompt = `You are an SVG icon designer. Generate exactly 9 different SVG icons for the keyword: "${keyword}"
-
-${STYLE_PROMPT[style] || STYLE_PROMPT.flat}
-
-RULES FOR EACH ICON:
-- viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"
-- Centered, coords 10-90 only
-- NO text elements, NO external refs
-- Each icon must be a DIFFERENT concept related to "${keyword}"
-- Clean, recognizable shapes
-
-Return ONLY this exact JSON (no markdown, no explanation):
-{"icons":[{"name":"icon name","svg":"<svg viewBox=\\"0 0 100 100\\" xmlns=\\"http://www.w3.org/2000/svg\\">...</svg>"},{"name":"...","svg":"..."},{"name":"...","svg":"..."},{"name":"...","svg":"..."},{"name":"...","svg":"..."},{"name":"...","svg":"..."},{"name":"...","svg":"..."},{"name":"...","svg":"..."},{"name":"...","svg":"..."}]}`;
+  const prompt = `Create 9 SVG icons for "${keyword}". Style: ${styles[style]||styles.flat}. Each icon: viewBox="0 0 100 100", centered, no text. Different concepts. Return JSON only: {"icons":[{"name":"name","svg":"<svg viewBox=\\"0 0 100 100\\" xmlns=\\"http://www.w3.org/2000/svg\\">...</svg>"},{"name":"...","svg":"..."},{"name":"...","svg":"..."},{"name":"...","svg":"..."},{"name":"...","svg":"..."},{"name":"...","svg":"..."},{"name":"...","svg":"..."},{"name":"...","svg":"..."},{"name":"...","svg":"..."}]}`;
 
   try {
     const apiKey = process.env.GROQ_API_KEY;
@@ -43,7 +31,7 @@ Return ONLY this exact JSON (no markdown, no explanation):
         model: 'llama-3.1-8b-instant',
         messages: [{ role: 'user', content: prompt }],
         temperature: 0.7,
-        max_tokens: 6000,
+        max_tokens: 6000
       })
     });
 
@@ -65,6 +53,5 @@ Return ONLY this exact JSON (no markdown, no explanation):
 
   } catch (e) {
     return res.status(500).json({ error: e.message || 'Terjadi kesalahan' });
-    
   }
 };
