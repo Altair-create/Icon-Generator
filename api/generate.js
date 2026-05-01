@@ -40,7 +40,7 @@ Return ONLY this exact JSON (no markdown, no explanation):
         'Authorization': 'Bearer ' + apiKey
       },
       body: JSON.stringify({
-        model: 'llama3-70b-8192',
+        model: 'mixtral-8x7b-32768',
         messages: [{ role: 'user', content: prompt }],
         temperature: 0.7,
         max_tokens: 8192
