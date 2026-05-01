@@ -40,7 +40,7 @@ Return ONLY this exact JSON (no markdown, no explanation):
         'Authorization': 'Bearer ' + apiKey
       },
       body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
+        model: 'deepseek-r1-distill-llama-70b',
         messages: [{ role: 'user', content: prompt }],
         temperature: 0.7,
         max_tokens: 8192
