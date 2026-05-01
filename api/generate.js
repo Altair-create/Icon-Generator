@@ -31,7 +31,7 @@ module.exports = async function handler(req, res) {
         model: 'llama-3.1-8b-instant',
         messages: [{ role: 'user', content: prompt }],
         temperature: 0.7,
-        max_tokens: 6000
+        max_tokens: 5000,
       })
     });
 
