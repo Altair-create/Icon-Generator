@@ -15,7 +15,7 @@ module.exports = async function handler(req, res) {
     ui: 'minimal UI, filled #374151, simple shapes'
   };
 
-  const prompt = `Create 9 SVG icons for "${keyword}". Style: ${styles[style]||styles.flat}. Each icon: viewBox="0 0 100 100", centered, no text. Different concepts. Return JSON only: {"icons":[{"name":"name","svg":"<svg viewBox=\\"0 0 100 100\\" xmlns=\\"http://www.w3.org/2000/svg\\">...</svg>"},{"name":"...","svg":"..."},{"name":"...","svg":"..."},{"name":"...","svg":"..."},{"name":"...","svg":"..."},{"name":"...","svg":"..."},{"name":"...","svg":"..."},{"name":"...","svg":"..."},{"name":"...","svg":"..."}]}`;
+  const prompt = `Create 4 SVG icons for "${keyword}". Style: ${styles[style]||styles.flat}. Each icon: viewBox="0 0 100 100", centered, no text. Different concepts. Return JSON only: {"icons":[{"name":"name","svg":"<svg viewBox=\\"0 0 100 100\\" xmlns=\\"http://www.w3.org/2000/svg\\">...</svg>"},{"name":"...","svg":"..."},{"name":"...","svg":"..."},{"name":"...","svg":"..."}]}`;
 
   try {
     const apiKey = process.env.GROQ_API_KEY;
@@ -28,10 +28,10 @@ module.exports = async function handler(req, res) {
         'Authorization': 'Bearer ' + apiKey
       },
       body: JSON.stringify({
-        model: 'llama-3.1-8b-instant',
+        model: 'llama-3.3-70b-versatile',
         messages: [{ role: 'user', content: prompt }],
         temperature: 0.7,
-        max_tokens: 5000,
+        max_tokens: 4000
       })
     });
 
@@ -52,6 +52,6 @@ module.exports = async function handler(req, res) {
     return res.status(200).json({ icons: parsed.icons });
 
   } catch (e) {
-    return res.status(500).json({ error: e.message || 'Terjadi kesalahan', stack: e.stack, type: e.constructor.name });
+    return res.status(500).json({ error: e.message || 'Terjadi kesalahan' });
   }
 };
